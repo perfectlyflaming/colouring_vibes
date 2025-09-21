@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Theme Editor</title>
+    <style>
+        /* 1. FONT & ROOT VARIABLES */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            /* Palette */
+            --bg-main: #008080;
+            --bg-window: #c0c0c0;
+            --text-main: #000000;
+            --text-header: #ffffff;
+            --text-link: #0000ff;
+            --text-link-visited: #800080;
+            --header-bg: #000080;
+            --accent-bg: #ffffff;
+            --accent-text: #000000;
+            --button-bg: #c0c0c0;
+            --button-text: #000000;
+            --border-light: #ffffff;
+            --border-dark: #808080;
+            --border-deep: #000000;
+            --highlight-bg: #000080;
+            --highlight-text: #ffffff;
+        }
+
+        /* 2. GENERAL STYLES & LAYOUT */
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'VT323', monospace;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 8px;
+            font-size: 18px;
+        }
+        .main-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .main-container > * { flex-grow: 1; min-width: 320px; }
+
+        /* 3. RETRO UI "WINDOW" STYLES */
+        .retro-window {
+            background-color: var(--bg-window);
+            border-top: 2px solid var(--border-light);
+            border-left: 2px solid var(--border-light);
+            border-right: 2px solid var(--border-dark);
+            border-bottom: 2px solid var(--border-dark);
+            box-shadow: 2px 2px 0 var(--border-deep);
+        }
+        .window-header {
+            background: linear-gradient(to right, var(--header-bg), #a0a0a0);
+            color: var(--text-header);
+            padding: 2px 8px;
+            font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .window-content { padding: 16px; max-height: 80vh; overflow-y: auto; }
+        .window-content h1, .window-content h2, .window-content h3, .window-content h4, .window-content h5, .window-content h6 {
+             margin-top: 1.2em; margin-bottom: 0.6em;
+        }
+
+        /* 4. CONTROL PANEL STYLES */
+        #top-bar { padding: 5px; margin-bottom: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        #top-bar > * { margin: 2px; }
+        .color-control {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        .color-control label { white-space: nowrap; }
+        .color-values {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .hex-input {
+            font-family: 'VT323', monospace;
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            border: 1px inset var(--border-dark);
+            width: 75px;
+            text-align: center;
+            font-size: 15px;
+            padding: 1px 2px;
+        }
+        .rgb-display { font-size: 12px; }
+        input[type="color"] {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            width: 40px; height: 32px; background-color: transparent;
+            border: 2px inset var(--border-dark); cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch { border: none; }
+        input[type="color"]::-moz-color-swatch { border: none; }
+
+        /* 5. UI ELEMENT & FORM STYLES */
+        button, select, input, textarea, fieldset, legend {
+            font-family: 'VT323', monospace; font-size: 16px;
+            background-color: var(--button-bg); color: var(--button-text);
+            border: 2px outset var(--border-light); padding: 4px 8px;
+        }
+        button:active { border-style: inset; }
+        select, input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
+            border-style: inset; background-color: var(--accent-bg);
+            color: var(--accent-text);
+        }
+        input:focus, textarea:focus, select:focus { outline: 2px solid var(--text-link); }
+        fieldset { border: 2px inset var(--border-dark); }
+        progress { -webkit-appearance: none; appearance: none; border: 2px inset var(--border-dark); height: 20px; }
+        progress::-webkit-progress-bar { background-color: var(--accent-bg); }
+        progress::-webkit-progress-value { background-color: var(--header-bg); }
+        meter::-webkit-meter-bar { background-color: var(--accent-bg); border: 2px inset var(--border-dark); }
+        meter::-webkit-meter-optimum-value { background: var(--header-bg); }
+
+        /* 6. BLOG CONTENT STYLES */
+        #blog-content a { color: var(--text-link); }
+        #blog-content a:visited { color: var(--text-link-visited); }
+        #blog-content blockquote { border-left: 4px solid var(--text-main); padding-left: 10px; margin-left: 0; }
+        #blog-content pre, #blog-content code, #blog-content kbd, #blog-content samp {
+            background-color: var(--accent-bg); color: var(--accent-text);
+            padding: 2px 4px; font-family: 'VT323', monospace;
+        }
+        #blog-content pre { padding: 10px; white-space: pre-wrap; border: 2px inset var(--border-dark); }
+        #blog-content table { width: 100%; border-collapse: collapse; border: 2px inset var(--border-dark); }
+        #blog-content th, #blog-content td { border: 1px solid var(--border-dark); padding: 8px; text-align: left; }
+        #blog-content th { background-color: var(--button-bg); color: var(--button-text); }
+        #blog-content hr { border: none; border-top: 2px solid var(--border-dark); border-bottom: 2px solid var(--border-light); margin: 1em 0; }
+        #blog-content img, #blog-content video, #blog-content svg, #blog-content canvas {
+            max-width: 100%; height: auto; border: 2px inset var(--border-dark); background-color: #eee;
+        }
+        #blog-content details { border: 2px inset var(--border-dark); padding: 0.5em; }
+        #blog-content summary { font-weight: bold; cursor: pointer; }
+        #blog-content mark { background-color: var(--highlight-bg); color: var(--highlight-text); }
+        #blog-content ins { text-decoration: none; background-color: #90ee90; }
+        #blog-content del { background-color: #ffcccb; }
+    </style>
+</head>
+<body>
+
+    <header id="top-bar" class="retro-window">
+        <label for="theme-selector">Theme:</label>
+        <select id="theme-selector"></select>
+        <input type="text" id="theme-name-input" placeholder="Enter new theme name">
+        <button id="save-theme-btn">💾 Save</button>
+        <button id="export-btn">📄 Export</button>
+    </header>
+    
+    <div class="main-container">
+
+        <main class="retro-window" style="flex-basis: 70%;">
+            <div class="window-header">C:\MY_BLOG\PREVIEW.EXE</div>
+            <div class="window-content" id="blog-content">
+                <nav>
+                    <h3>Navigation</h3>
+                    <menu>
+                        <li><a href="#text">Text Elements</a></li>
+                        <li><a href="#media">Media Elements</a></li>
+                        <li><a href="#forms">Form Elements</a></li>
+                    </menu>
+                </nav>
+                <hr>
+                <article>
+                    <header>
+                        <h1>Main Article Heading (h1)</h1>
+                        <p>Published on <time datetime="1996-12-25">December 25, 1996</time></p>
+                    </header>
+                    
+                    <section id="text">
+                        <h2>Text Elements Demo (h2)</h2>
+                        <p>This paragraph contains many inline text elements. We have <b>bold text</b>, <i>italic text</i>, <u>underlined text</u>, and <s>strikethrough text</s>. You can use <em>emphasis</em> or <strong>strong importance</strong>. Here's a <a href="#">hyperlink</a>. We can add <mark>highlighted text</mark>, <small>small text</small>, and citation with <cite>Title of Work</cite>. For definitions, we use <dfn>HTML</dfn>, which stands for <abbr title="HyperText Markup Language">HyperText Markup Language</abbr>. Let's look at some computer-related text: `<code>code snippet</code>`, <kbd>keyboard input</kbd>, <samp>sample output</samp>, and a <var>variable</var>. We also support <sub>subscript</sub> and <sup>superscript</sup> text. This text is <ins>newly inserted</ins>, while this <del>has been deleted</del>.</p>
+                        <blockquote>This is a blockquote, for quoting a passage from another source. It should be visually distinct.</blockquote>
+                        <pre><code>// Preformatted text block
+function helloWorld() {
+  console.log("Hello, world!");
+}</code></pre>
+                        <dl>
+                          <dt>Definition List</dt>
+                          <dd>A list of terms and their descriptions.</dd>
+                          <dt>Term 2</dt>
+                          <dd>Description for term 2.</dd>
+                        </dl>
+                    </section>
+                    
+                    <section id="media">
+                        <h3>Media and Embedded Content (h3)</h4>
+                        <figure>
+                            
+                            <figcaption>Fig 1. A retro image with a caption.</figcaption>
+                        </figure>
+                        <p>Below are placeholders for various media types.</p>
+                        <video controls width="250">
+                            <source src="/media/cc0-videos/flower.webm" type="video/webm">
+                            Sorry, your browser doesn't support embedded videos.
+                        </video>
+                        <audio controls>
+                            <source src="/media/cc0-audio/t-rex-roar.mp3" type="audio/mpeg">
+                            Sorry, your browser doesn't support the audio element.
+                        </audio>
+                        <p>An interactive element:</p>
+                        <details>
+                            <summary>Click to see details</summary>
+                            <p>Here is more information that was previously hidden. You can put any content in here.</p>
+                        </details>
+                    </section>
+                    
+                    <section id="tables">
+                        <h4>Tables (h4)</h5>
+                        <table>
+                            <caption>Monthly User Stats</caption>
+                            <colgroup>
+                                <col span="1" style="width: 50%;">
+                                <col span="2" style="width: 25%;">
+                            </colgroup>
+                            <thead>
+                                <tr><th>Month</th><th>Signups</th><th>Logins</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Jan</td><td>100</td><td>850</td></tr>
+                                <tr><td>Feb</td><td>120</td><td>910</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr><td>Total</td><td>220</td><td>1760</td></tr>
+                            </tfoot>
+                        </table>
+                    </section>
+
+                    <section id="forms">
+                        <h5>Forms (h5)</h6>
+                        <form>
+                            <fieldset>
+                                <legend>User Information</legend>
+                                <div>
+                                    <label for="name">Name:</label>
+                                    <input type="text" id="name" value="Ada Lovelace">
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="email">Email:</label>
+                                    <input type="email" id="email" placeholder="user@example.com">
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="password">Password:</label>
+                                    <input type="password" id="password" value="password123">
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="search">Search:</label>
+                                    <input type="search" id="search">
+                                </div>
+                                <br>
+                                <div>
+                                  <label for="ice-cream-choice">Choose a flavor:</label>
+                                  <input list="ice-cream-flavors" id="ice-cream-choice" name="ice-cream-choice" />
+                                  <datalist id="ice-cream-flavors">
+                                      <option value="Chocolate"></option>
+                                      <option value="Vanilla"></option>
+                                      <option value="Strawberry"></option>
+                                  </datalist>
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="os-select">Choose OS:</label>
+                                    <select name="os" id="os-select">
+                                      <optgroup label="Modern">
+                                        <option value="">--Please choose an option--</option>
+                                        <option value="win">Windows</option>
+                                        <option value="mac">MacOS</option>
+                                      </optgroup>
+                                      <optgroup label="Retro">
+                                        <option value="sys7">System 7</option>
+                                        <option value="win95">Windows 95</option>
+                                      </optgroup>
+                                    </select>
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="comments">Textarea:</label><br>
+                                    <textarea id="comments" rows="3">This is a textarea.</textarea>
+                                </div>
+                                <br>
+                                <div>
+                                    <p>Input Types:</p>
+                                    <input type="checkbox" id="check1" checked> <label for="check1">Checkbox</label><br>
+                                    <input type="radio" id="rad1" name="rad"> <label for="rad1">Radio 1</label><br>
+                                    <input type="radio" id="rad2" name="rad" checked> <label for="rad2">Radio 2</label><br>
+                                    <label for="date">Date:</label> <input type="date" id="date"><br>
+                                    <label for="color">Color:</label> <input type="color" id="color"><br>
+                                    <label for="range">Range:</label> <input type="range" id="range"><br>
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="file">File progress:</label>
+                                    <progress id="file" max="100" value="70"> 70% </progress>
+                                </div>
+                                <br>
+                                <div>
+                                    <label for="disk">Disk usage:</label>
+                                    <meter id="disk" min="0" max="100" low="30" high="75" optimum="80" value="90">at 90/100</meter>
+                                </div>
+                                <br>
+                                <div>
+                                    <button type="button">Button</button>
+                                    <input type="submit" value="Submit Input">
+                                </div>
+                            </fieldset>
+                        </form>
+                    </section>
+                    
+                    <footer>
+                        <h6>Footer (h6)</h6>
+                        <address>
+                            Written by <a href="mailto:webmaster@example.com">A. Developer</a>.<br> 
+                            Visit us at: example.com<br>
+                            Box 564, Disneyland<br>
+                            USA
+                        </address>
+                    </footer>
+                </article>
+            </div>
+        </main>
+        
+        <aside class="retro-window" style="flex-basis: 25%;">
+            <div class="window-header">COLOR.PAL</div>
+            <div class="window-content" id="editor-controls">
+                </div>
+        </aside>
+
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const colorControlsContainer = document.getElementById('editor-controls');
+    const themeSelector = document.getElementById('theme-selector');
+    const themeNameInput = document.getElementById('theme-name-input');
+    const saveThemeBtn = document.getElementById('save-theme-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const root = document.documentElement;
+
+    const colorProperties = [
+        { var: '--bg-main', label: 'Page BG' }, { var: '--bg-window', label: 'Window BG' },
+        { var: '--text-main', label: 'Main Text' }, { var: '--text-header', label: 'Header Text' },
+        { var: '--text-link', label: 'Link Text' }, { var: '--text-link-visited', label: 'Visited Link' },
+        { var: '--header-bg', label: 'Header BG' }, { var: '--accent-bg', label: 'Input/Code BG' },
+        { var: '--accent-text', label: 'Input/Code Text' }, { var: '--button-bg', label: 'Button BG' },
+        { var: '--button-text', label: 'Button Text' }, { var: '--border-light', label: '3D Border Light' },
+        { var: '--border-dark', label: '3D Border Dark' }, { var: '--border-deep', label: '3D Border Shadow' },
+        { var: '--highlight-bg', label: 'Highlight BG'}, {var: '--highlight-text', label: 'Highlight Text'}
+    ];
+    
+    // ## UTILITY: Color Conversion ##
+    function hexToRgb(hex) {
+        let r=0, g=0, b=0;
+        if (hex.length === 4) { // #RGB
+            r = "0x" + hex[1] + hex[1]; g = "0x" + hex[2] + hex[2]; b = "0x" + hex[3] + hex[3];
+        } else if (hex.length === 7) { // #RRGGBB
+            r = "0x" + hex[1] + hex[2]; g = "0x" + hex[3] + hex[4]; b = "0x" + hex[5] + hex[6];
+        }
+        return `rgb(${+r},${+g},${+b})`;
+    }
+
+    // ## 1. INITIALIZATION ##
+    colorProperties.forEach(prop => {
+        const controlDiv = document.createElement('div');
+        controlDiv.className = 'color-control';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', prop.var);
+        label.textContent = prop.label;
+
+        // Container for HEX/RGB values
+        const valuesContainer = document.createElement('div');
+        valuesContainer.className = 'color-values';
+
+        // Editable HEX input
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'hex-input';
+
+        // RGB display
+        const rgbSpan = document.createElement('span');
+        rgbSpan.className = 'rgb-display';
+        
+        // Color picker
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.id = prop.var;
+        colorInput.dataset.var = prop.var;
+        
+        // Set initial values
+        const initialColor = getComputedStyle(root).getPropertyValue(prop.var).trim();
+        colorInput.value = initialColor;
+        hexInput.value = initialColor;
+        rgbSpan.textContent = hexToRgb(initialColor);
+
+        // Event listener for the color picker
+        colorInput.addEventListener('input', (e) => {
+            const newHex = e.target.value;
+            root.style.setProperty(e.target.dataset.var, newHex);
+            hexInput.value = newHex;
+            rgbSpan.textContent = hexToRgb(newHex);
+        });
+
+        // Event listener for the HEX text input
+        hexInput.addEventListener('change', (e) => {
+            let textValue = e.target.value.toLowerCase().trim();
+            if (!textValue.startsWith('#')) {
+                textValue = '#' + textValue;
+            }
+            const hexRegex = /^#([0-9a-f]{3}){1,2}$/i;
+            if (hexRegex.test(textValue)) {
+                let finalHex = textValue;
+                if (finalHex.length === 4) { // Expand #rgb to #rrggbb
+                    finalHex = '#' + finalHex[1].repeat(2) + finalHex[2].repeat(2) + finalHex[3].repeat(2);
+                }
+                colorInput.value = finalHex;
+                root.style.setProperty(prop.var, finalHex);
+                rgbSpan.textContent = hexToRgb(finalHex);
+                e.target.value = finalHex; // Update input field to #rrggbb format
+            } else {
+                e.target.value = colorInput.value; // Revert on invalid input
+            }
+        });
+        
+        valuesContainer.appendChild(hexInput);
+        valuesContainer.appendChild(rgbSpan);
+        controlDiv.appendChild(label);
+        controlDiv.appendChild(valuesContainer);
+        controlDiv.appendChild(colorInput);
+        colorControlsContainer.appendChild(controlDiv);
+    });
+    loadThemes();
+
+    // ## 2. EVENT LISTENERS ##
+    themeSelector.addEventListener('change', switchTheme);
+    saveThemeBtn.addEventListener('click', saveCurrentTheme);
+    exportBtn.addEventListener('click', exportTheme);
+
+    // ## 3. THEME MANAGEMENT FUNCTIONS ##
+    function getThemes() { return JSON.parse(localStorage.getItem('retroThemes')) || {}; }
+    function saveThemes(themes) { localStorage.setItem('retroThemes', JSON.stringify(themes)); }
+
+    function applyTheme(theme) {
+        if (!theme) return;
+        Object.keys(theme).forEach(key => root.style.setProperty(key, theme[key]));
+        
+        document.querySelectorAll('.color-control').forEach(control => {
+            const picker = control.querySelector('input[type="color"]');
+            const hexInput = control.querySelector('.hex-input');
+            const rgbSpan = control.querySelector('.rgb-display');
+            if (picker && hexInput && rgbSpan) {
+                const hex = theme[picker.dataset.var] || '#000000';
+                picker.value = hex;
+                hexInput.value = hex;
+                rgbSpan.textContent = hexToRgb(hex);
+            }
+        });
+    }
+
+    function loadThemes() {
+        themeSelector.innerHTML = '';
+        const themes = getThemes();
+        const defaultOption = document.createElement('option');
+        defaultOption.textContent = 'Select a theme...';
+        defaultOption.disabled = true; defaultOption.selected = true;
+        themeSelector.appendChild(defaultOption);
+        for (const themeName in themes) {
+            const option = document.createElement('option');
+            option.value = themeName; option.textContent = themeName;
+            themeSelector.appendChild(option);
+        }
+    }
+
+    function switchTheme() {
+        const themeName = themeSelector.value;
+        const themes = getThemes();
+        if (themes[themeName]) { applyTheme(themes[themeName]); }
+    }
+
+    function saveCurrentTheme() {
+        const themeName = themeNameInput.value.trim();
+        if (!themeName) { alert('Please enter a name for the theme.'); return; }
+        const themes = getThemes();
+        const newTheme = {};
+        colorProperties.forEach(prop => {
+            newTheme[prop.var] = getComputedStyle(root).getPropertyValue(prop.var).trim();
+        });
+        themes[themeName] = newTheme;
+        saveThemes(themes);
+        loadThemes();
+        themeNameInput.value = '';
+        alert(`Theme "${themeName}" saved!`);
+        themeSelector.value = themeName;
+    }
+
+    // ## 4. EXPORT FUNCTIONALITY ##
+    function exportTheme() {
+        let rootCss = ':root {\n';
+        colorProperties.forEach(prop => {
+             rootCss += `    ${prop.var}: ${getComputedStyle(root).getPropertyValue(prop.var).trim()};\n`;
+        });
+        rootCss += '}';
+        const baseCss = Array.from(document.styleSheets[0].cssRules)
+            .map(rule => rule.cssText).filter(text => !text.startsWith(':root')).join('\n\n');
+        const fullCss = rootCss + '\n\n' + baseCss;
+        const blogHtml = document.getElementById('blog-content').innerHTML;
+        const htmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Retro Blog</title>
+    <style>${fullCss}</style>
+</head>
+<body>
+    <main class="retro-window">
+        <div class="window-header">C:\\MY_BLOG\\INDEX.HTM</div>
+        <div class="window-content" id="blog-content">${blogHtml}</div>
+    </main>
+</body>
+</html>`;
+        const blob = new Blob([htmlTemplate], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'my-retro-theme.html';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+});
+</script>
+
+</body>
+</html>
